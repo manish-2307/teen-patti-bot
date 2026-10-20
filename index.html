@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teen Patti</title>
+<style>
+:root{--felt:#0f3b2e;--felt2:#0a2a21;--gold:#f0b24f;--cream:#f6efe0;--ink:#1e1e26;--red:#bd322d;--mute:#8fb3a4}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 30%,var(--felt),var(--felt2));color:var(--cream);font:16px/1.4 Georgia,"Times New Roman",serif}
+main{max-width:720px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:2.4rem;margin:8px 0 4px;color:var(--gold);letter-spacing:.02em}
+p.sub{margin:0 0 24px;color:var(--mute)}
+.panel{background:rgba(0,0,0,.25);border:1px solid rgba(240,178,79,.35);border-radius:10px;padding:16px;margin-bottom:16px}
+label{display:block;margin:10px 0 4px;color:var(--mute);font-size:.9rem}
+input,select{width:100%;padding:10px;border-radius:6px;border:1px solid #3d6b5a;background:var(--felt2);color:var(--cream);font:inherit}
+button{font:inherit;cursor:pointer;border:0;border-radius:6px;padding:11px 16px;background:var(--gold);color:var(--ink);font-weight:bold}
+button:hover:not(:disabled){filter:brightness(1.1)}
+button:disabled{opacity:.3;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
+button.alt{background:transparent;color:var(--cream);border:1px solid var(--mute)}
+button.red{background:var(--red);color:#fff}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1}
+.hidden{display:none}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.code{font-size:1.6rem;letter-spacing:.25em;color:var(--gold);font-weight:bold}
+.pot{text-align:center;padding:14px}
+.pot b{font-size:2.2rem;color:var(--gold)}
+.seats{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.seat{border:1px solid #3d6b5a;border-radius:8px;padding:10px;background:rgba(0,0,0,.2)}
+.seat.turn{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+.seat.win{background:rgba(240,178,79,.2)}
+.seat.out{opacity:.45}
+.seat small{color:var(--mute)}
+.cards{display:flex;gap:6px;margin-top:8px}
+.card{position:relative;width:46px;height:64px;border-radius:6px;background:var(--cream);color:var(--ink);display:grid;place-items:center;font:bold 1.5rem Georgia,serif;box-shadow:0 2px 4px rgba(0,0,0,.4)}
+.card i{position:absolute;top:3px;left:5px;font:bold .7rem/1 Georgia,serif;font-style:normal;text-align:center}
+.card b{font-size:1.4em}
+.mine .card i{font-size:1rem;top:5px;left:7px}
+.timer{color:var(--gold);font-weight:bold}.timer.low{color:#ff9a94}
+.chat{max-height:150px;overflow-y:auto;font-size:.92rem;margin-bottom:8px;color:var(--mute)}
+.chat b{color:var(--gold)}
+dialog{background:var(--felt2);color:var(--cream);border:1px solid var(--gold);border-radius:10px;max-width:520px;padding:20px}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+dialog li{margin:6px 0}
+.card.red{color:var(--red)}
+.card.back{background:repeating-linear-gradient(45deg,#7d1f1b,#7d1f1b 5px,#9c2b26 5px,#9c2b26 10px);border:2px solid var(--cream)}
+.log{color:var(--mute);font-size:.92rem;min-height:5.5em}
+.log div:last-child{color:var(--cream)}
+.mine .card{width:68px;height:94px;font-size:2rem}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.err{color:#ff9a94;min-height:1.4em;margin-top:8px}
+.side{background:rgba(240,178,79,.15);border:1px solid var(--gold);border-radius:8px;padding:12px;margin-top:12px}
+</style>
+</head>
+<body>
+<main>
+  <h1>Teen Patti</h1>
+  <p class="sub">Play with friends using free play chips. Nothing is bet for real money. <button class="alt rulesBtn" style="padding:4px 10px">Rules</button></p>
+
+  <section id="home" class="panel">
+    <label for="name">Your name</label>
+    <input id="name" maxlength="16" autocomplete="nickname">
+    <div class="row" style="margin-top:14px">
+      <div>
+        <label for="boot">Boot amount</label>
+        <select id="boot"><option>10</option><option>20</option><option>50</option><option>100</option></select>
+        <label for="mode">Game</label>
+        <select id="mode"><option value="classic">Classic (highest wins)</option><option value="muflis">Muflis (lowest wins)</option></select>
+        <button id="create" style="margin-top:10px;width:100%">Create table</button>
+        <label for="bots">Practice with bots</label>
+        <select id="bots"><option value="1">1 bot</option><option value="2" selected>2 bots</option><option value="3">3 bots</option></select>
+        <button id="practice" class="alt" style="margin-top:10px;width:100%">Practice vs bots</button>
+      </div>
+      <div>
+        <label for="jcode">Table code</label>
+        <input id="jcode" maxlength="4" style="text-transform:uppercase" placeholder="ABCD">
+        <button id="join" class="alt" style="margin-top:10px;width:100%">Join table</button>
+      </div>
+    </div>
+    <div id="homeErr" class="err" role="alert"></div>
+  </section>
+
+  <section id="game" class="hidden">
+    <div class="top panel">
+      <div><small>Table code, share it with friends</small><div class="code" id="code"></div></div>
+      <div class="row" style="flex:0 0 auto"><button id="coachBtn" class="alt"></button><button id="mute" class="alt" aria-label="Toggle sound"></button><button class="alt rulesBtn">Rules</button><button id="leave" class="alt">Leave</button><button id="close" class="red hidden">Close table</button></div>
+    </div>
+    <div class="panel pot">Pot <b id="pot">0</b><br><small id="stake"></small><br><span id="timer" class="timer"></span></div>
+    <div class="seats" id="seats"></div>
+    <div class="panel" style="margin-top:16px">
+      <div class="log" id="log"></div>
+    </div>
+    <div class="panel">
+      <div class="chat" id="chat"></div>
+      <div class="row"><input id="ctext" maxlength="120" placeholder="Say something" aria-label="Chat message" style="flex:4"><button id="csend" style="flex:1">Send</button></div>
+    </div>
+    <div class="panel mine" id="mine">
+      <div id="mycards" class="cards"></div>
+      <div id="myrank"></div>
+      <div id="coach" class="side hidden"></div>
+      <div id="sideBox" class="side hidden">
+        <div id="sideText"></div>
+        <div class="row" style="margin-top:8px"><button data-a="yes">Accept</button><button data-a="no" class="red">Decline</button></div>
+      </div>
+      <div class="actions">
+        <button data-a="chaal" id="b-chaal"></button>
+        <button data-a="raise" id="b-raise"></button>
+        <button data-a="pack" class="red" id="b-pack">Pack</button>
+        <button data-a="show" id="b-show"></button>
+        <button data-a="side" id="b-side"></button>
+        <button data-a="see" class="alt" id="b-see">See cards</button>
+      </div>
+      <button data-a="deal" id="b-deal" style="width:100%;margin-top:10px"></button>
+      <div id="err" class="err" role="alert"></div>
+    </div>
+  </section>
+</main>
+<dialog id="rules">
+  <h2 style="margin-top:0;color:var(--gold)">Teen Patti rules</h2>
+  <ul>
+    <li>Everyone puts in the boot. Play <b>blind</b> (pay the stake) or <b>see</b> your cards (pay double).</li>
+    <li><b>Raise</b> doubles the stake, up to 16x the boot. <b>Pack</b> to fold.</li>
+    <li><b>Show</b> (2 players left): pay to compare hands. A tie goes to the opponent.</li>
+    <li><b>Side show:</b> a seen player asks the previous seen player to compare. The lower hand packs, and a tie packs the asker.</li>
+    <li><b>Ranking:</b> Trail, Pure sequence, Sequence, Color, Pair, High card. A-K-Q is the top run, A-2-3 is second.</li>
+    <li><b>Muflis:</b> same hands, but the lowest hand wins.</li>
+    <li>You have 30 seconds per turn, then you pack automatically.</li>
+    <li><b>Practice:</b> play against bots with the Coach on. It explains your hand and suggests a move. Turn it off when you are ready.</li>
+    <li>You can join a table mid-hand and play from the next hand.</li>
+  </ul>
+  <button onclick="this.closest('dialog').close()">Close</button>
+</dialog>
+
+<script>
+const $ = s => document.querySelector(s);
+const pid = localStorage.tpPid || (localStorage.tpPid = Math.random().toString(36).slice(2) + Date.now().toString(36));
+let code = localStorage.tpCode || "", timer = null;
+$("#name").value = localStorage.tpName || "";
+
+async function api(path, body) {
+  const opts = body ? {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({...body, pid})} : undefined;
+  const r = await fetch("/api/" + path, opts);
+  const j = await r.json().catch(() => ({error: "Server error. Check your Redis setup."}));
+  if (!r.ok) throw new Error(j.error || "Something went wrong.");
+  return j;
+}
+function name() {
+  const n = $("#name").value.trim();
+  if (!n) throw new Error("Enter your name first.");
+  localStorage.tpName = n; return n;
+}
+async function enter(c) { code = c; localStorage.tpCode = c; poll(); }
+$("#create").onclick = async () => {
+  try { enter((await api("create", {name: name(), boot: +$("#boot").value, mode: $("#mode").value})).code); $("#homeErr").textContent = ""; }
+  catch (e) { $("#homeErr").textContent = e.message; }
+};
+$("#practice").onclick = async () => {
+  try { enter((await api("create", {name: name(), boot: +$("#boot").value, mode: $("#mode").value, bots: +$("#bots").value})).code); $("#homeErr").textContent = ""; }
+  catch (e) { $("#homeErr").textContent = e.message; }
+};
+let coachOn = localStorage.tpCoach !== "0";
+const setCoach = () => $("#coachBtn").textContent = coachOn ? "Coach on" : "Coach off";
+$("#coachBtn").onclick = () => { coachOn = !coachOn; localStorage.tpCoach = coachOn ? "1" : "0"; setCoach(); poll(true); };
+setCoach();
+$("#join").onclick = async () => {
+  try { enter((await api("join", {name: name(), code: $("#jcode").value})).code); $("#homeErr").textContent = ""; }
+  catch (e) { $("#homeErr").textContent = e.message; }
+};
+async function exit(msg) { code = ""; localStorage.removeItem("tpCode"); clearTimeout(timer); prev = null; show(false); $("#homeErr").textContent = msg || ""; }
+$("#leave").onclick = async () => { if (!confirm("Leave this table? If a hand is running you will pack.")) return; try { await api("act", {code, action: "leave"}); } catch (e) {} exit(); };
+$("#close").onclick = async () => { if (!confirm("Close the table for everyone?")) return; try { await api("act", {code, action: "close"}); } catch (e) {} exit(); };
+document.querySelectorAll(".rulesBtn").forEach(b => b.onclick = () => $("#rules").showModal());
+const sendChat = async () => { const t = $("#ctext").value.trim(); if (!t) return; $("#ctext").value = ""; try { await api("act", {code, action: "chat", text: t}); poll(true); } catch (e) { $("#err").textContent = e.message; } };
+$("#csend").onclick = sendChat;
+$("#ctext").onkeydown = e => { if (e.key === "Enter") sendChat(); };
+// sound (generated in the browser, no files)
+let ac, muted = localStorage.tpMute === "1", prev = null;
+function beep(f, d = .12, t = 0) {
+  if (muted) return;
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    const o = ac.createOscillator(), g = ac.createGain(), at = ac.currentTime + t;
+    o.frequency.value = f; o.connect(g); g.connect(ac.destination);
+    g.gain.setValueAtTime(.15, at); g.gain.exponentialRampToValueAtTime(.001, at + d);
+    o.start(at); o.stop(at + d);
+  } catch (e) {}
+}
+const setMute = () => $("#mute").textContent = muted ? "Sound off" : "Sound on";
+$("#mute").onclick = () => { muted = !muted; localStorage.tpMute = muted ? "1" : "0"; setMute(); beep(600); };
+setMute();
+document.querySelectorAll("[data-a]").forEach(b => b.onclick = async () => {
+  try { $("#err").textContent = ""; await api("act", {code, action: b.dataset.a}); poll(true); }
+  catch (e) { $("#err").textContent = e.message; }
+});
+
+function show(on) { $("#home").classList.toggle("hidden", on); $("#game").classList.toggle("hidden", !on); }
+function cardEl(c) {
+  const d = document.createElement("div");
+  d.className = "card" + (c ? (/[♥♦]/.test(c) ? " red" : "") : " back");
+  if (c) { const r = c.slice(0, -1), su = c.slice(-1); d.innerHTML = `<i>${r}<br>${su}</i><b>${su}</b>`; }
+  return d;
+}
+function render(s) {
+  show(true);
+  $("#code").textContent = s.code;
+  $("#pot").textContent = s.pot;
+  const mode = s.mode === "muflis" ? "Muflis, lowest wins. " : "";
+  $("#stake").textContent = mode + (s.phase === "play" ? `Current stake ${s.stake}, boot ${s.boot}` : `Boot ${s.boot}`);
+  const tm = $("#timer"); tm.textContent = s.phase === "play" ? `${s.turn_name}: ${s.turn_left}s left` : ""; tm.classList.toggle("low", s.turn_left <= 8);
+  const seats = $("#seats"); seats.replaceChildren();
+  s.players.forEach(p => {
+    const d = document.createElement("div");
+    d.className = "seat" + (p.turn ? " turn" : "") + (p.win ? " win" : "") + (p.packed || p.left ? " out" : "");
+    const status = p.left ? "left" : p.packed && !p.wait ? "packed" : p.win ? "winner" : p.left ? "left" : p.wait ? "joins next hand" : p.turn ? "to play" : p.seen ? "seen" : s.phase === "play" ? "blind" : "";
+    d.innerHTML = `<b></b>${p.you ? " (you)" : ""}${p.bot ? " (bot)" : ""}<br><small>${p.chips} chips, in ${p.bet}${status ? ", " + status : ""}</small>`;
+    d.querySelector("b").textContent = p.name;
+    if (s.phase !== "lobby" && !p.you) {
+      const c = document.createElement("div"); c.className = "cards";
+      (p.cards || [null, null, null]).forEach(x => c.append(cardEl(x)));
+      d.append(c);
+      if (p.rank) d.append(Object.assign(document.createElement("small"), {textContent: p.rank}));
+    }
+    seats.append(d);
+  });
+  $("#log").replaceChildren(...s.log.map(t => Object.assign(document.createElement("div"), {textContent: t})));
+  const me = s.players.find(p => p.you);
+  const mc = $("#mycards"); mc.replaceChildren();
+  if (s.phase !== "lobby") (me.cards || [null, null, null]).forEach(x => mc.append(cardEl(x)));
+  $("#myrank").textContent = me.rank ? `Your hand: ${me.rank}` : (s.phase === "play" && !me.packed ? "Playing blind. Press See cards to look." : "");
+  const cb = $("#coach"); cb.classList.toggle("hidden", !coachOn || !s.coach); cb.textContent = s.coach || "";
+  if (coachOn && s.coach) $("#myrank").textContent = "";
+  const c = s.can, l = s.labels;
+  [["chaal", c.chaal, l.chaal], ["raise", c.raise_, l.raise_], ["pack", c.pack], ["show", c.show, l.show],
+   ["side", c.side, l.side], ["see", c.see]].forEach(([k, on, text]) => {
+    const b = $("#b-" + k); b.disabled = !on; if (text) b.textContent = text;
+  });
+  $("#close").classList.toggle("hidden", !c.close);
+  const ch = $("#chat"), atEnd = ch.scrollTop + ch.clientHeight >= ch.scrollHeight - 20;
+  ch.replaceChildren(...s.chat.map(m => { const d = document.createElement("div"); d.innerHTML = "<b></b> "; d.firstChild.textContent = m.n + ":"; d.append(document.createTextNode(m.t)); return d; }));
+  if (atEnd) ch.scrollTop = ch.scrollHeight;
+  const lastChat = s.chat.length ? s.chat[s.chat.length - 1] : null;
+  if (prev) {
+    if (lastChat && (!prev.chatId || lastChat.i > prev.chatId) && lastChat.n !== me.name) beep(660, .06);
+    if (s.hand_no !== prev.hand) { beep(330, .06); beep(392, .06, .08); beep(494, .06, .16); }
+    if (c.chaal && !prev.turn) { beep(880, .1); beep(1100, .12, .13); }
+    if (s.phase === "over" && prev.phase !== "over") me.win ? [523, 659, 784, 1046].forEach((f, k) => beep(f, .14, k * .13)) : beep(220, .25);
+  }
+  prev = {hand: s.hand_no, turn: c.chaal, phase: s.phase, chatId: lastChat ? lastChat.i : 0};
+  const deal = $("#b-deal"); deal.textContent = l.deal; deal.disabled = !c.deal;
+  deal.classList.toggle("hidden", s.phase === "play");
+  $("#sideBox").classList.toggle("hidden", !c.answer);
+  $("#sideText").textContent = s.side || "";
+  if (s.side && !c.answer) $("#log").append(Object.assign(document.createElement("div"), {textContent: s.side + "..."}));
+}
+async function poll(once) {
+  clearTimeout(timer);
+  if (!code) return show(false);
+  try {
+    const r = await fetch(`/api/state?code=${code}&pid=${pid}`);
+    if (r.status === 404) return exit(prev ? "That table was closed." : "");
+    render(await r.json());
+  } catch (e) { /* retry on next tick */ }
+  timer = setTimeout(poll, 1500);
+}
+poll();
+</script>
+</body>
+</html>
