@@ -1,3 +1,4 @@
+
 """Teen Patti web API (FastAPI) - state lives in Upstash Redis so it works on Vercel."""
 import json
 import os
@@ -14,7 +15,7 @@ app = FastAPI()
 SUITS = "♠♥♦♣"
 RL = {11: "J", 12: "Q", 13: "K", 14: "A"}
 MAX_PLAYERS = 6
-TURN_SECS = 30
+TURN_SECS = 90
 
 # ---------------- storage ----------------
 URL = os.environ.get("KV_REST_API_URL") or os.environ.get("UPSTASH_REDIS_REST_URL")
